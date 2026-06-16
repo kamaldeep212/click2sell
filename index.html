@@ -231,15 +231,29 @@ document.addEventListener('DOMContentLoaded', async function() {
     updateVisualState(lang);
 
     var tries=0;
+    var comboApplied=false;
     var timer=setInterval(function(){
       var combo=getCombo();
       tries++;
       if(combo){
         combo.value=lang;
         combo.dispatchEvent(new Event('change',{bubbles:true}));
+        comboApplied=true;
         clearInterval(timer);
       }
-      if(tries>40) clearInterval(timer);
+      if(tries>40){
+        clearInterval(timer);
+        // Reliable fallback when Google widget cannot mount in this export.
+        if(!comboApplied){
+          if(lang==='de'){
+            location.reload();
+            return;
+          }
+          var cleanUrl = window.location.origin + window.location.pathname;
+          var target = 'https://translate.google.com/translate?sl=de&tl=' + lang + '&u=' + encodeURIComponent(cleanUrl);
+          window.location.href = target;
+        }
+      }
     },150);
   }
 
